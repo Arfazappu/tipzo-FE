@@ -58,52 +58,53 @@ function Customer() {
   // 2nd approach
 
   const handleTipPay = async (waiter) => {
-    try {
-      setLoading(true)
-      const payload = {
-        waiterName: waiter.name,
-        waiterUPI: waiter.upiId,
-      };
-      const res = await axiosInstance.post(
-        "/restaurant/generate-waiter-qr",
-        payload
-      );
-      const qrCodeDataURL = res?.data?.qrCodeDataURL;
+    window.location.href = `paytmmp://upi/pay?pa=arfazmohammed515@okhdfcbank&pn=Waiter&am=1&cu=INR`;
+    // try {
+    //   setLoading(true)
+    //   const payload = {
+    //     waiterName: waiter.name,
+    //     waiterUPI: waiter.upiId,
+    //   };
+    //   const res = await axiosInstance.post(
+    //     "/restaurant/generate-waiter-qr",
+    //     payload
+    //   );
+    //   const qrCodeDataURL = res?.data?.qrCodeDataURL;
 
-      if (qrCodeDataURL) {
-        if (navigator.share) {
-          try {
-            // Convert data URL to a Blob
-            const response = await fetch(qrCodeDataURL);
-            const blob = await response.blob();
+    //   if (qrCodeDataURL) {
+    //     if (navigator.share) {
+    //       try {
+    //         // Convert data URL to a Blob
+    //         const response = await fetch(qrCodeDataURL);
+    //         const blob = await response.blob();
 
-            // Create a File from the Blob
-            const file = new File(
-              [blob],
-              `Tip-${waiter.name}.png`,
-              { type: "image/png" }
-            );
+    //         // Create a File from the Blob
+    //         const file = new File(
+    //           [blob],
+    //           `Tip-${waiter.name}.png`,
+    //           { type: "image/png" }
+    //         );
 
-            // Share the QR code image
-            await navigator.share({
-              title: `Tip ${waiter.name}`,
-              text: `Tip payment for ${waiter.name}`,
-              files: [file],
-            });
+    //         // Share the QR code image
+    //         await navigator.share({
+    //           title: `Tip ${waiter.name}`,
+    //           text: `Tip payment for ${waiter.name}`,
+    //           files: [file],
+    //         });
 
-            return;
-          } catch (shareError) {
-            enqueueSnackbar('Failed to pay, Please try again.', { variant: "error" });
-          }
-        }
-      }
-    } catch (error) {
-      const errorMessage =
-        error?.response?.data?.message || "Failed to pay, Please try again.";
-      enqueueSnackbar(errorMessage, { variant: "error" });
-    } finally{
-      setLoading(false)
-    }
+    //         return;
+    //       } catch (shareError) {
+    //         enqueueSnackbar('Failed to pay, Please try again.', { variant: "error" });
+    //       }
+    //     }
+    //   }
+    // } catch (error) {
+    //   const errorMessage =
+    //     error?.response?.data?.message || "Failed to pay, Please try again.";
+    //   enqueueSnackbar(errorMessage, { variant: "error" });
+    // } finally{
+    //   setLoading(false)
+    // }
   };
 
   return (
