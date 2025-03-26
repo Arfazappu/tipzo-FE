@@ -59,71 +59,51 @@ function Customer() {
 
   const handleTipPay = async (waiter) => {
     try {
-    setLoading(true);
+      setLoading(true)
+      const payload = {
+        waiterName: waiter.name,
+        waiterUPI: waiter.upiId,
+      };
+      const res = await axiosInstance.post(
+        "/restaurant/generate-waiter-qr",
+        payload
+      );
+      const qrCodeDataURL = res?.data?.qrCodeDataURL;
 
-    const upiLink = `upi://pay?pa=${waiter.upiId}&pn=${encodeURIComponent(waiter.name)}&am=50&cu=INR`;
+      if (qrCodeDataURL) {
+        if (navigator.share) {
+          try {
+            // Convert data URL to a Blob
+            const response = await fetch(qrCodeDataURL);
+            const blob = await response.blob();
 
-    if (navigator.share) {
-      await navigator.share({
-        title: `Tip ${waiter.name}`,
-        text: `Click to pay tip to ${waiter.name}`,
-        url: upiLink,  // Shareable UPI link
-      });
-    } else {
-      // Fallback: Open link directly
-      window.location.href = upiLink;
+            // Create a File from the Blob
+            const file = new File(
+              [blob],
+              `Tip-${waiter.name}.png`,
+              { type: "image/png" }
+            );
+
+            // Share the QR code image
+            await navigator.share({
+              title: `Tip ${waiter.name}`,
+              text: `Tip payment for ${waiter.name}`,
+              files: [file],
+            });
+
+            return;
+          } catch (shareError) {
+            enqueueSnackbar('Failed to pay, Please try again.', { variant: "error" });
+          }
+        }
+      }
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message || "Failed to pay, Please try again.";
+      enqueueSnackbar(errorMessage, { variant: "error" });
+    } finally{
+      setLoading(false)
     }
-  } catch (error) {
-    enqueueSnackbar("Failed to share payment link, please try again.", { variant: "error" });
-  } finally {
-    setLoading(false);
-  }
-    // try {
-    //   setLoading(true)
-    //   const payload = {
-    //     waiterName: waiter.name,
-    //     waiterUPI: waiter.upiId,
-    //   };
-    //   const res = await axiosInstance.post(
-    //     "/restaurant/generate-waiter-qr",
-    //     payload
-    //   );
-    //   const qrCodeDataURL = res?.data?.qrCodeDataURL;
-
-    //   if (qrCodeDataURL) {
-    //     if (navigator.share) {
-    //       try {
-    //         // Convert data URL to a Blob
-    //         const response = await fetch(qrCodeDataURL);
-    //         const blob = await response.blob();
-
-    //         // Create a File from the Blob
-    //         const file = new File(
-    //           [blob],
-    //           `Tip-${waiter.name}.png`,
-    //           { type: "image/png" }
-    //         );
-
-    //         // Share the QR code image
-    //         await navigator.share({
-    //           title: `Tip ${waiter.name}`,
-    //           text: `Tip payment for ${waiter.name}`,
-    //           files: [file],
-    //         });
-
-    //         return;
-    //       } catch (shareError) {
-    //         enqueueSnackbar('Failed to pay, Please try again.', { variant: "error" });
-    //       }
-    //     }
-    //   }
-    // } catch (error) {
-    //   const errorMessage =
-    //     error?.response?.data?.message || "Failed to pay, Please try again.";
-    //   enqueueSnackbar(errorMessage, { variant: "error" });
-    // } finally{
-    //   setLoading(false)
-    // }
   };
 
   return (
